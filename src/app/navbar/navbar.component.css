@@ -1,0 +1,4 @@
+.nav-link {
+    pointer-events: auto;  /* Asegúrate de que los enlaces sean clickeables */
+    opacity: 1;  /* Asegúrate de que los enlaces sean visibles */
+  }
