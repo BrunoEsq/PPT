@@ -13,12 +13,13 @@
             class="inline-flex items-center px-4 ms-1 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Go</a>
     </div>
 </form>
+
 <h1 *ngIf="n_choosed == true || avatarUrl != 'https://api.multiavatar.com/Paco.svg' && loaded_cookies"
     class="text-center text-2xl font-bold my-4 text-white">Welcome {{ name }}</h1>
+
 <div *ngIf="n_choosed == true || avatarUrl != 'https://api.multiavatar.com/Paco.svg' && loaded_cookies"
     class="flex justify-center items-center min-h-96">
-    <div
-        class="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+    <div class="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
         <div class="flex justify-end px-4 pt-4">
             <button id="dropdownButton" data-dropdown-toggle="dropdown"
                 class="inline-block text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-1.5"

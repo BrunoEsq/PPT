@@ -24,7 +24,7 @@ export class ProfileService {
   }
 
   // Método para establecer una cookie (solo en el navegador)
-  private setCookie(name: string, value: string, days: number): void {
+  public setCookie(name: string, value: string, days: number): void {
     if (!this.isBrowser) return;
 
     const date = new Date();
@@ -51,7 +51,7 @@ export class ProfileService {
   }
 
   // Método para borrar una cookie (solo en el navegador)
-  private deleteCookie(name: string): void {
+  public deleteCookie(name: string): void {
     if (this.isBrowser) {
       this.setCookie(name, '', -1);
     }
