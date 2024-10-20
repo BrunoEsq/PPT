@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProfileService } from '../profile.service';
-
+import { SocketWebService } from '../socket-web.service';
 
 @Component({
   selector: 'app-create-match',
@@ -21,7 +21,7 @@ export class CreateMatchComponent {
   random = -1;
   image = "https://cdn-icons-png.flaticon.com/512/6831/6831874.png";
 
-  constructor(private profileService: ProfileService) {
+  constructor(private profileService: ProfileService, private socketWeb: SocketWebService) {
 
   }
   ngOnInit() {
@@ -37,10 +37,13 @@ export class CreateMatchComponent {
   }
 
   createRoom() {
+    this.socketWeb.joinRoom(this.floating_email);
     this.profileService.setCookie("room", this.floating_email, 7);
     this.room = this.floating_email;
     console.log(this.room);
   }
+
+
 
  randomInt(min: number, max: number): number {
     const randomBuffer = new Uint32Array(1);

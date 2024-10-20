@@ -1,22 +1,33 @@
-import { Injectable } from '@angular/core';
-import { Socket } from 'ngx-socket-io';
+import { ApplicationRef, inject, Injectable } from '@angular/core';
+import { first, Observable } from 'rxjs';
+import { io, Socket } from 'socket.io-client';
+
 
 @Injectable({
   providedIn: 'root'
 })
-export class SocketWebService extends Socket {
+export class SocketWebService {
+  private socket: Socket;
 
-  constructor() { 
-    super({ url: 'http://localhost:4000', options: {} });
+  constructor() {
+    this.socket = io('http://localhost:3000', { autoConnect: false });
+    inject(ApplicationRef).isStable.pipe(
+      first((isStable) => isStable))
+    .subscribe(() => { this.socket.connect() });
   }
 
-  // Emitir un evento para crear o unirse a una sala
+  // Unirse o crear una sala
   joinRoom(room: string) {
-    this.emit('joinRoom', room);
+    this.socket.emit('joinRoom', room); // Emitir al servidor el evento para unirse a la sala
   }
 
-  // Escuchar mensajes del servidor
-  onNewMessage() {
-    return this.fromEvent('message');
+  // Escuchar mensajes
+  onMessage(callback: (message: string) => void) {
+    this.socket.on('message', callback);
+  }
+
+  // Enviar un mensaje a la sala
+  sendMessage(room: string, message: string) {
+    this.socket.emit('sendMessage', { room, message });
   }
 }
