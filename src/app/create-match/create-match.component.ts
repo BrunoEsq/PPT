@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProfileService } from '../profile.service';
-import { SocketWebService } from '../socket-web.service';
+import { SocketService } from '../socket.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-create-match',
@@ -11,75 +12,97 @@ import { SocketWebService } from '../socket-web.service';
   templateUrl: './create-match.component.html',
   styleUrl: './create-match.component.css'
 })
-export class CreateMatchComponent {
-
+export class CreateMatchComponent implements OnInit, OnDestroy {
+  messages: string[] = [];
+  message: string = '';
   floating_email = "";
-  floating_password = "";
-
   room = "";
   avatar = "";
-  random = -1;
   image = "https://cdn-icons-png.flaticon.com/512/6831/6831874.png";
+  playerChoice = -1; // La elección del jugador actual
+  opponentChoice = -1; // La elección del oponente
+  resultMessage = "";  // Mensaje de resultado
 
-  constructor(private profileService: ProfileService, private socketWeb: SocketWebService) {
+  private messageSubscription!: Subscription;
+  private gameSubscription!: Subscription;
 
-  }
+  constructor(
+    private profileService: ProfileService, 
+    private socketWeb: SocketService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
   ngOnInit() {
     this.avatar = this.profileService.getCookie('avatar') ?? '';
-
-    if (this.avatar) { // Verifica que this.avatar no esté vacío o undefined
+    
+    if (this.avatar) { 
       this.avatar = this.avatar.split("/")[3];
       this.avatar = this.avatar.split(".")[0];
     } else {
-      console.warn("La cookie 'avatar' no está definida."); // Mensaje de advertencia
-      this.avatar = ''; // O asigna un valor predeterminado
+      console.warn("La cookie 'avatar' no está definida.");
+      this.avatar = '';
+    }
+
+    // Escuchar mensajes del servidor
+    this.messageSubscription = this.socketWeb.listen('message').subscribe((data: string) => {
+      this.messages.push(data);
+      this.cdr.detectChanges();
+    });
+
+    // Escuchar el resultado del juego
+    this.gameSubscription = this.socketWeb.listen('gameResult').subscribe((data: any) => {
+      console.log('Game result received', data);
+      this.playerChoice = data.playerChoice;
+      this.opponentChoice = data.opponentChoice;
+      this.updateGameResult();
+      this.cdr.detectChanges();
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.messageSubscription) {
+      this.messageSubscription.unsubscribe();
+    }
+    if (this.gameSubscription) {
+      this.gameSubscription.unsubscribe();
     }
   }
 
   createRoom() {
-    this.socketWeb.joinRoom(this.floating_email);
-    this.profileService.setCookie("room", this.floating_email, 7);
     this.room = this.floating_email;
     console.log(this.room);
+    this.socketWeb.emit('joinRoom', { room: this.room, avatar: this.avatar });
   }
 
-
-
- randomInt(min: number, max: number): number {
-    const randomBuffer = new Uint32Array(1);
-    window.crypto.getRandomValues(randomBuffer);
-    return Math.floor(randomBuffer[0] / (0xFFFFFFFF + 1) * (max - min)) + min;
-}
-
-// Tu método ppt
-ppt(codigo: number) {
-    // Genera un número aleatorio entre 0 y 2
-    this.random = this.randomInt(0, 3); // Cambia randomInt(3) a randomInt(0, 3)
-    
-    // Verifica las condiciones de victoria
-    if (codigo === this.random) {
-        console.log('Empate');
-        this.image = "https://e7.pngegg.com/pngimages/347/831/png-clipart-aktobe-text-typesetting-typesetter-service-playing-the-fat-of-the-tie-love-child-thumbnail.png";
-        
-    } else if (codigo === 0 && this.random === 1) {
-        console.log('Pierdes: Piedra vs Papel');
-        this.image = "https://png.pngtree.com/png-vector/20210716/ourmid/pngtree-lose-popup-loser-dialog-defeat-failure-fail-png-image_3605553.jpg";
-    } else if (codigo === 0 && this.random === 2) {
-        console.log('Ganas: Piedra vs Tijera');
-        this.image = "https://img.freepik.com/premium-vector/winner-banner-modern-curved-ads-tag_189959-1310.jpg";
-    } else if (codigo === 1 && this.random === 0) {
-        console.log('Ganas: Papel vs Piedra');
-        this.image = "https://img.freepik.com/premium-vector/winner-banner-modern-curved-ads-tag_189959-1310.jpg";
-    } else if (codigo === 1 && this.random === 2) {
-        console.log('Pierdes: Papel vs Tijera');
-        this.image = "https://png.pngtree.com/png-vector/20210716/ourmid/pngtree-lose-popup-loser-dialog-defeat-failure-fail-png-image_3605553.jpg";
-    } else if (codigo === 2 && this.random === 0) {
-        console.log('Pierdes: Tijera vs Piedra');
-        this.image = "https://png.pngtree.com/png-vector/20210716/ourmid/pngtree-lose-popup-loser-dialog-defeat-failure-fail-png-image_3605553.jpg";
-    } else if (codigo === 2 && this.random === 1) {
-        console.log('Ganas: Tijera vs Papel');
-        this.image = "https://img.freepik.com/premium-vector/winner-banner-modern-curved-ads-tag_189959-1310.jpg";
+  sendMessage() {
+    if (this.message) {
+      this.socketWeb.emit('message', this.message);
+      this.message = '';
     }
-}
+  }
 
+  // El jugador hace su elección
+  ppt(codigo: number) {
+    console.log('Player choice:', codigo);
+    this.playerChoice = codigo;
+    this.socketWeb.emit('playGame', { room: this.room, choice: codigo });
+  }
+
+  // Actualizar el resultado del juego
+  updateGameResult() {
+    if (this.playerChoice === this.opponentChoice) {
+      this.resultMessage = 'Empate';
+    } else if (
+      (this.playerChoice === 0 && this.opponentChoice === 2) || // Piedra vence a tijera
+      (this.playerChoice === 1 && this.opponentChoice === 0) || // Papel vence a piedra
+      (this.playerChoice === 2 && this.opponentChoice === 1)    // Tijera vence a papel
+    ) {
+      this.resultMessage = 'Perdiste';
+      this.image = "https://static.vecteezy.com/system/resources/thumbnails/016/775/740/small_2x/red-cross-isolated-png.png";
+    } else {
+      this.resultMessage = '¡Ganaste!';
+      this.image = this.profileService.getCookie('avatar') ?? '';
+    }
+  }
+  
 }

@@ -1,6 +1,7 @@
 <h1 *ngIf="room == ''" class="text-center text-2xl font-bold my-4 text-white">Welcome {{avatar}}</h1>
 <h1 *ngIf="room != ''" class="text-center text-2xl font-bold my-4 text-white">Welcome to the room: {{room}}</h1>
 
+<!-- Formulario para unirse a la sala -->
 <form *ngIf="room == ''" (submit)="createRoom()" class="max-w-md mx-auto">
     <div class="relative z-0 w-full mb-5 group">
         <input type="text" name="floating_email" id="floating_email" [(ngModel)]='floating_email'
@@ -11,34 +12,34 @@
             name</label>
     </div>
 
-
     <button type="submit"
         class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
 </form>
 
-
+<!-- Mostrar opciones de juego solo si se ha unido a la sala -->
 <div *ngIf="room != ''" class="flex justify-center items-center min-h-96">
-    <div
-        class="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-        <div class="flex justify-end px-4 pt-4">
-            <div id="dropdown"
-                class="z-10 hidden text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
-                
-            </div>
-        </div>
+    <div class="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
         <div class="flex flex-col items-center pb-10">
-            <img class="w-24 h-24 mb-3 rounded-full shadow-lg" src="{{image}}" alt="Bonnie image" />
-            <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white"></h5>
-            <span class="text-sm text-gray-500 dark:text-gray-400"></span>
+            <img class="w-24 h-24 mb-3 rounded-full shadow-lg" src="{{image}}" alt="Player image" />
+            
+            <!-- Botones para hacer la jugada -->
             <div class="flex mt-4 md:mt-6">
-                <button (click)="ppt(0)" routerLink="/create-match"
-                    class="py-2 px-4 ms-2 text-sm font-medium text-white bg-blue-500 rounded-lg border border-gray-200 hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-700">Rock</button>
-                <button (click)="ppt(1)"
-                    class="py-2 px-4 ms-2 text-sm font-medium text-white bg-orange-500 rounded-lg border border-gray-200 hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-300 dark:focus:ring-orange-700">Scissors</button>
-                <button (click)="ppt(2)"
-                    class="py-2 px-4 ms-2 text-sm font-medium text-white bg-green-500 rounded-lg border border-gray-200 hover:bg-green-600 focus:outline-none focus:ring-4 focus:ring-green-300 dark:focus:ring-green-700">Paper</button>
-
+                <button (click)="ppt(0)" class="py-2 px-4 ms-2 text-sm font-medium text-white bg-blue-500 rounded-lg border border-gray-200 hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-700">Rock</button>
+                <button (click)="ppt(1)" class="py-2 px-4 ms-2 text-sm font-medium text-white bg-orange-500 rounded-lg border border-gray-200 hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-300 dark:focus:ring-orange-700">Scissors</button>
+                <button (click)="ppt(2)" class="py-2 px-4 ms-2 text-sm font-medium text-white bg-green-500 rounded-lg border border-gray-200 hover:bg-green-600 focus:outline-none focus:ring-4 focus:ring-green-300 dark:focus:ring-green-700">Paper</button>
             </div>
+
+            <!-- Mostrar el resultado del juego -->
+            <h2 *ngIf="resultMessage" class="text-2xl font-bold my-4 text-white">{{resultMessage}}</h2>
         </div>
     </div>
+</div>
+
+<!-- Chat y mensajes -->
+<div *ngIf="room != ''">
+    <input [(ngModel)]="message" placeholder="Escribe un mensaje" class="block w-full p-2 text-gray-900 bg-gray-200 border rounded-lg" />
+    <button (click)="sendMessage()" class="mt-2 py-2 px-4 bg-blue-500 text-white rounded-lg">Enviar</button>
+
+    <!-- Mostrar los mensajes -->
+    <div *ngFor="let msg of messages" class="mt-2 p-2 bg-gray-700 text-white rounded-lg">{{ msg }}</div>
 </div>
