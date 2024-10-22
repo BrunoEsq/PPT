@@ -9,15 +9,17 @@ import { RouterModule } from '@angular/router';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './lobby.component.html',
-  styleUrl: './lobby.component.css'
+  styleUrls: ['./lobby.component.css']
 })
 export class LobbyComponent {
   name = "Choose your name";
-  rank = "Begginer";
+  rank = "Beginner";
   n_choosed = false;
   avatarUrl = 'https://api.multiavatar.com/Paco.svg';
   loaded_cookies = false;
   temp_name = "";
+  room: string = '';  // Aquí se define la propiedad 'room'
+
   constructor(private profileService: ProfileService) { }
 
   createProfile() {
@@ -25,12 +27,10 @@ export class LobbyComponent {
     console.log(this.avatarUrl);
     this.profileService.updateAvatar(this.avatarUrl);
     this.n_choosed = true;
-
   }
 
   ngOnInit() {
     this.avatarUrl = this.profileService.getCookie('avatar') || 'https://api.multiavatar.com/Paco.svg';
-
 
     if (this.avatarUrl === 'https://api.multiavatar.com/Paco.svg') {
       this.n_choosed = false;
@@ -43,5 +43,10 @@ export class LobbyComponent {
     this.loaded_cookies = true;
   }
 
-
+  // Método para unirse a una sala
+  joinRoom(roomName: string) {
+    this.room = roomName;  // Asignar el nombre de la sala seleccionada
+    console.log(`Joined room: ${this.room}`);
+    // Lógica adicional para unirse a la sala
+  }
 }
