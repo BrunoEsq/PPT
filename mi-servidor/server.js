@@ -7,13 +7,13 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:4200",
+    origin: "https://ppt-gamma-six.vercel.app",
     methods: ["GET", "POST"]
   }
 });
 
 app.use(cors({
-  origin: "http://localhost:4200"
+  origin: "https://ppt-gamma-six.vercel.app"
 }));
 
 let rooms = {}; // Para almacenar información de las salas y los jugadores
